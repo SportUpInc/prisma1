@@ -33,7 +33,7 @@ lazy val prerunHookFile = new java.io.File(sys.props("user.dir") + "/prerun_hook
 
 def commonDockerImageSettings(imageName: String, baseImage: String, tag: String) = commonServerSettings ++ Seq(
   imageNames in docker := Seq(
-    ImageName(s"prismagraphql/$imageName:$tag")
+    ImageName(s"up2metrics/$imageName:$tag")
   ),
   sources in (Compile, doc) := Seq.empty,
   dockerfile in docker := {
@@ -44,6 +44,7 @@ def commonDockerImageSettings(imageName: String, baseImage: String, tag: String)
       from(s"$baseImage:$tag")
       copy(appDir, targetDir)
       copy(prerunHookFile , s"$targetDir/prerun_hook.sh")
+      runShell("apk", "add", "bash")
       runShell(s"touch", s"$targetDir/start.sh")
       runShell("echo", "'#!/bin/bash'", ">>", s"$targetDir/start.sh")
       runShell("echo", "set -e", ">>", s"$targetDir/start.sh")
@@ -60,7 +61,7 @@ def commonDockerImageSettings(imageName: String, baseImage: String, tag: String)
 
 javaOptions in Universal ++= Seq("-Dorg.jooq.no-logo=true")
 
-def imageProject(name: String, imageName: String, baseImage: String = "anapsix/alpine-java", tag: String = "latest"): Project = imageProject(name).enablePlugins(sbtdocker.DockerPlugin, JavaAppPackaging).settings(commonDockerImageSettings(imageName, baseImage, tag): _*).dependsOn(prismaImageShared)
+def imageProject(name: String, imageName: String, baseImage: String = "openjdk", tag: String = "8u171-alpine"): Project = imageProject(name).enablePlugins(sbtdocker.DockerPlugin, JavaAppPackaging).settings(commonDockerImageSettings(imageName, baseImage, tag): _*).dependsOn(prismaImageShared)
 def imageProject(name: String): Project = Project(id = name, base = file(s"./images/$name"))
 def serverProject(name: String): Project = Project(id = name, base = file(s"./servers/$name")).settings(commonServerSettings: _*).dependsOn(scalaUtils).dependsOn(tracing).dependsOn(logging)
 def connectorProject(name: String): Project =  Project(id = name, base = file(s"./connectors/$name")).settings(commonSettings: _*).dependsOn(scalaUtils).dependsOn(prismaConfig).dependsOn(tracing)
