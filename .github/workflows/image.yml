@@ -13,14 +13,14 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
-      - name: SBT action docker stage
-        id: sbt
-        uses: lokkju/github-action-sbt@master
+      - name: setup Scala
+        uses: olafurpg/setup-scala@v11
         with:
-          commands: docker:stage
-          sbt_project_directory: ./server
-      - name: nistall buildx
-        id: buildx
+          java-version: "adopt@1.8"
+      - name: build docker file
+        working-directory: ./server
+        run: sbt docker:stage
+      - name: install buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
