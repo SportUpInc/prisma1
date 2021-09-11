@@ -28,9 +28,8 @@ jobs:
           version: latest
       - name: build docker file
         working-directory: ./server
-      - run: sbt docker:stage
-      - run: |
-          docker buildx build \
+        run: |
+          sbt docker:stage && docker buildx build \
             --output "type=image,push=true" \
             --tag up2metrics/prisma:latest \
             --platform linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64 ./images/prisma-local/target/docker/
